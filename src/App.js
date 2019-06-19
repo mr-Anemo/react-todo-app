@@ -35,8 +35,11 @@ class App extends React.Component {
 	}
 
 
+	/**
+	 * Add new task
+	 */
 	onClickAddTask() {
-		this.store.dispatch(addTask('Введите текст'));
+		this.store.dispatch(addTask({ text: 'Введите текст' }));
 	}
 
 

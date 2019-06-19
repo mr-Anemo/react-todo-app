@@ -4,8 +4,7 @@ import React    from 'react';
 import { Task } from './../Task/Task.jsx';
 import {
 	deleteTask, 
-	toggleTask,
-	saveTask
+	changeTask
 } from './../../redux/actions/actions.js';
 
 const _ = {
@@ -22,22 +21,55 @@ class TasksList extends React.Component {
 		this.onDeleteTask                = this.onDeleteTask.bind(this);
 		this.onSaveTaskChanges           = this.onSaveTaskChanges.bind(this);
 		this.onChangeTaskCompletedStatus = this.onChangeTaskCompletedStatus.bind(this);
+
+		this._processTasksHash();
+	}
+
+	
+	componentWillReceiveProps() {
+		this._processTasksHash();
 	}
 
 
+	_processTasksHash() {
+		this.tasksHash = {};
+
+		this.store.getState().forEach(task => {
+			this.tasksHash[task.id] = task;
+		});
+	}
+
+
+	/**
+	 * Toggle completed task
+	 * 
+	 * @param {String} id - task id
+	 */
 	onChangeTaskCompletedStatus(id) {
-		this.store.dispatch(toggleTask(id));
+		let task = Object.assign({}, this.tasksHash[id], { completed: !this.tasksHash[id].completed });
+
+		this.store.dispatch(changeTask(task));
 	}
 
 
+	/**
+	 * Save task changes
+	 * 
+	 * @param {String} id - task id
+	 * @param {Object} changes - task object
+	 */
 	onSaveTaskChanges(id, changes) {
-		let tasks = this.store.getState(),
-			task = Object.assign({}, tasks[tasks.findIndex(task => task.id === id)], changes);
+		let task = Object.assign({}, this.tasksHash[id], changes);
 
-		this.store.dispatch(saveTask(id, task));
+		this.store.dispatch(changeTask(task));
 	}
 
 
+	/**
+	 * Delete task
+	 * 
+	 * @param {String} id - task id
+	 */
 	onDeleteTask(id) {
 		this.store.dispatch(deleteTask(id));
 	}

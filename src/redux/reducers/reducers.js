@@ -1,4 +1,4 @@
-import { ADD_TASK, DELETE_TASK, SAVE_TASK, TOGGLE_TASK } from './../actions/actions.js';
+import { ADD_TASK, DELETE_TASK, CHANGE_TASK } from './../actions/actions.js';
 
 
 function addTask(state, action) {
@@ -17,23 +17,15 @@ function deleteTask(state, action) {
 		...state.slice(0, taskIndex),
 		...state.slice(taskIndex + 1)
 	]
-}
+};
 
 
-function toggleTask(state, action) {
-	if (action.id !== state.id)
-		return state;
-
-	return Object.assign({}, state, { completed: !state.completed });
-}
-
-
-function saveTask(state, action) {
+function changeTask(state, action) {
 	if (action.id !== state.id)
 		return state;
 
 	return Object.assign({}, state, action);
-}
+};
 
 
 export default function reducer(state = [], action) {
@@ -44,11 +36,8 @@ export default function reducer(state = [], action) {
 		case DELETE_TASK:
 			return deleteTask(state, action);
 
-		case SAVE_TASK:
-			return state.map(task => saveTask(task, action));
-
-		case TOGGLE_TASK: 
-			return state.map(task => toggleTask(task, action));
+		case CHANGE_TASK:
+			return state.map(task => changeTask(task, action));
 
 		default:
 			return state;

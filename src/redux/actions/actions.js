@@ -1,14 +1,17 @@
 export const ADD_TASK    = 'ADD_TASK';
 export const DELETE_TASK = 'DELETE_TASK';
-export const SAVE_TASK   = 'SAVE_TASK';
-export const TOGGLE_TASK = 'TOGGLE_TASK';
+export const CHANGE_TASK = 'CHANGE_TASK';
 
-export function addTask(text) {
-	return {
-		type: ADD_TASK,
-		text,
-		id: `task_${Math.random()}`
-	};
+export function addTask(task) {
+	return Object.assign(
+		{},
+		{
+			type: ADD_TASK,
+			text: 'Введите задание',
+			id: `task_${Math.random()}`
+		},
+		task
+	);
 };
 
 
@@ -17,17 +20,9 @@ export function deleteTask(id) {
 		type: DELETE_TASK,
 		id
 	};
-}
+};
 
 
-export function toggleTask(id) {
-	return {
-		type: TOGGLE_TASK,
-		id
-	};
-}
-
-
-export function saveTask(task) {
-	return Object.assign({}, { type: SAVE_TASK }, task);
-}
+export function changeTask(task) {
+	return Object.assign({}, { type: CHANGE_TASK }, task);
+};

@@ -1,44 +1,42 @@
 'use strict'
 
-import React from 'react';
+import React         from 'react';
 import { TasksList } from './components/TasksList/TasksList.jsx';
-import produce from 'immer';
+import produce       from 'immer';
+import { addTask }   from './redux/actions/actions.js';
 
 const _ = {
-	get: require('lodash/get'),
+	get:   require('lodash/get'),
 	merge: require('lodash/merge')
 };
 
 class App extends React.Component {
 
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
 
-		this.state = {
-			tasks: []
-		};
+		this.store = this.props.store;
 
 		this.onClickAddTask              = this.onClickAddTask.bind(this);
-		this.onDeleteTask                = this.onDeleteTask.bind(this);
 		this.onChangeTaskText            = this.onChangeTaskText.bind(this);
 		this.onExitTaskEditMode          = this.onExitTaskEditMode.bind(this);
 		this.onSaveTaskChanges           = this.onSaveTaskChanges.bind(this);
 		this.onEnterTaskEditMode         = this.onEnterTaskEditMode.bind(this);
-		this.onChangeTaskCompletedStatus = this.onChangeTaskCompletedStatus.bind(this);
 	}
 
 
-	onChangeTaskCompletedStatus(e, id) {
-		this.setState(
-			produce(state => {
-				state.tasks = state.tasks.map(task => {
-					if (id !== task.id)
-						return task;
+	componentDidMount() {
+		this.unsubscribe = this.store.subscribe(() => this.forceUpdate());
+	}
 
-					return Object.assign({}, task, { completed: !task.completed });
-				});
-			})
-		);
+
+	componentWillUnmount() {
+		this.unsubscribe();
+	}
+
+
+	onClickAddTask() {
+		this.store.dispatch(addTask('Введите текст'));
 	}
 
 
@@ -110,30 +108,6 @@ class App extends React.Component {
 	}
 
 
-	onClickAddTask() {
-		this.setState(
-			produce(state => {
-				state.tasks.push({
-					nextText: 'Введите текст',
-					text: 'Введите текст',
-					id: `task_${Math.random()}`,
-					editMode: true,
-					completed: false
-				});
-			})
-		);
-	}
-
-
-	onDeleteTask(id) {
-		this.setState(
-			produce(state => {
-				state.tasks = state.tasks.filter(task => task.id !== id);
-			})
-		);
-	}
-
-
 	render() {
 		return (
 			<div className="App">
@@ -150,15 +124,7 @@ class App extends React.Component {
 					</div>
 					<div className="row">
 						<div className="col-md-12">
-							<TasksList
-								tasks={_.get(this, 'state.tasks', [])}
-								onChangeTaskText={this.onChangeTaskText}
-								onDeleteTask={this.onDeleteTask}
-								onExitTaskEditMode={this.onExitTaskEditMode}
-								onSaveTaskChanges={this.onSaveTaskChanges}
-								onEnterTaskEditMode={this.onEnterTaskEditMode}
-								onChangeTaskCompletedStatus={this.onChangeTaskCompletedStatus}
-							/>
+							<TasksList store={this.store} />
 						</div>
 					</div>
 				</div>

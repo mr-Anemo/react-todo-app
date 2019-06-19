@@ -1,8 +1,9 @@
 'use strict'
 
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React                                     from 'react';
+import { FontAwesomeIcon }                       from '@fortawesome/react-fontawesome';
 import { faTrash, faTimes, faSave, faPencilAlt } from '@fortawesome/free-solid-svg-icons';
+import produce                                   from 'immer';
 
 const _ = {
 	get: require('lodash/get')
@@ -10,8 +11,14 @@ const _ = {
 
 class Task extends React.Component {
 
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
+
+		this.state = {
+			editMode: void 0,
+		};
+
+		this.id = this.props.id;
 
 		this.onClickDelete           = this.onClickDelete.bind(this);
 		this.onChangeTaskText        = this.onChangeTaskText.bind(this);
@@ -23,45 +30,55 @@ class Task extends React.Component {
 	}
 
 
-	onChangeCompletedStatus(e) {
-		let id = e.currentTarget.getAttribute('data-id');
-
-		this.props.onChangeCompletedStatus && this.props.onChangeCompletedStatus(e, id);
-	}
-
-
 	onClickEnterEditMode(e) {
-		let id = e.currentTarget.getAttribute('data-id');
-
-		this.props.onEnterEditMode && this.props.onEnterEditMode(id);
+		this.setState(
+			produce(state => {
+				state.editMode = {
+					text: _.get(this, 'props.text')
+				};
+			})
+		);
 	}
 
 
-	onClickSaveChanges(e) {
-		let id = e.currentTarget.getAttribute('data-id');
-
-		this.props.onSaveChanges && this.props.onSaveChanges(id);
-	}
-
-
-	onClickExitEditMode(e) {
-		let id = e.currentTarget.getAttribute('data-id');
-
-		this.props.onExitEditMode && this.props.onExitEditMode(id);
+	onClickExitEditMode() {
+		this.setState(
+			produce(state => {
+				state.editMode = void 0;
+			})
+		);
 	}
 
 
 	onChangeTaskText(e) {
-		let id = e.currentTarget.getAttribute('data-id');
+		let value = e.target.value;
 
-		this.props.onChangeText && this.props.onChangeText(e, id);
+		this.setState(
+			produce(state => {
+				state.editMode.text = value;
+			})
+		);
 	}
 
 
-	onClickDelete(e) {
-		let id = e.currentTarget.getAttribute('data-id');
+	onClickSaveChanges() {
+		this.props.onSaveChanges && this.props.onSaveChanges(this.id, { text: _.get(this, 'state.editMode.text', _.get(this, 'props.text')) });
+		
+		this.setState(
+			produce(state => {
+				state.editMode = void 0;
+			})
+		);
+	}
 
-		this.props.onDelete && this.props.onDelete(id);
+
+	onChangeCompletedStatus() {
+		this.props.onChangeCompletedStatus && this.props.onChangeCompletedStatus(this.id);
+	}
+
+
+	onClickDelete() {
+		this.props.onDelete && this.props.onDelete(this.id);
 	}
 
 
@@ -72,7 +89,7 @@ class Task extends React.Component {
 				<div className="col-md-9">
 					<textarea 
 						className="form-control" 
-						value={_.get(this, 'props.nextText')}
+						value={_.get(this, 'state.editMode.text')}
 						onChange={this.onChangeTaskText}
 						data-id={_.get(this, 'props.id')}
 					/>
@@ -147,7 +164,7 @@ class Task extends React.Component {
 				<div className={`card ${_.get(this, 'props.completed', false) ? 'bg-secondary' : '' }`}>
 					<div className="card-body">
 						{
-							_.get(this, 'props.editMode')
+							_.get(this, 'state.editMode')
 								? this.renderEditMode()
 								: this.renderCommonMode()
 						}

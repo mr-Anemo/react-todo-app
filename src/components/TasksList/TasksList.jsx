@@ -1,7 +1,12 @@
 'use strict'
 
-import React from 'react';
+import React    from 'react';
 import { Task } from './../Task/Task.jsx';
+import {
+	deleteTask, 
+	toggleTask,
+	saveTask
+} from './../../redux/actions/actions.js';
 
 const _ = {
 	get: require('lodash/get')
@@ -9,62 +14,46 @@ const _ = {
 
 class TasksList extends React.Component {
 
-	constructor() {
-		super();
+	constructor(props) {
+		super(props);
+
+		this.store = this.props.store;
 
 		this.onDeleteTask                = this.onDeleteTask.bind(this);
-		this.onChangeTaskText            = this.onChangeTaskText.bind(this);
-		this.onExitTaskEditMode          = this.onExitTaskEditMode.bind(this);
 		this.onSaveTaskChanges           = this.onSaveTaskChanges.bind(this);
-		this.onEnterTaskEditMode         = this.onEnterTaskEditMode.bind(this);
 		this.onChangeTaskCompletedStatus = this.onChangeTaskCompletedStatus.bind(this);
 	}
 
 
-	onChangeTaskCompletedStatus(e, id) {
-		this.props.onChangeTaskCompletedStatus && this.props.onChangeTaskCompletedStatus(e, id);
+	onChangeTaskCompletedStatus(id) {
+		this.store.dispatch(toggleTask(id));
 	}
 
 
-	onEnterTaskEditMode(id) {
-		this.props.onEnterTaskEditMode && this.props.onEnterTaskEditMode(id);
-	}
+	onSaveTaskChanges(id, changes) {
+		let tasks = this.store.getState(),
+			task = Object.assign({}, tasks[tasks.findIndex(task => task.id === id)], changes);
 
-
-	onSaveTaskChanges(id) {
-		this.props.onSaveTaskChanges && this.props.onSaveTaskChanges(id);
-	}
-
-
-	onExitTaskEditMode(id) {
-		this.props.onExitTaskEditMode && this.props.onExitTaskEditMode(id);
-	} 
-
-
-	onChangeTaskText(e, id) {
-		this.props.onChangeTaskText && this.props.onChangeTaskText(e, id);
+		this.store.dispatch(saveTask(id, task));
 	}
 
 
 	onDeleteTask(id) {
-		this.props.onDeleteTask && this.props.onDeleteTask(id);
+		this.store.dispatch(deleteTask(id));
 	}
 
 
 	renderTasks() {
-		return _.get(this, 'props.tasks', []).map((task, index) => {
+		const tasks = this.store.getState();
+
+		return tasks.map(task => {
 			return (
 				<Task
-					key={`task_${index}`}
+					key={task.id}
 					id={task.id}
 					text={task.text}
-					nextText={task.nextText}
 					completed={task.completed}
-					editMode={task.editMode}
-					onChangeText={this.onChangeTaskText}
-					onEnterEditMode={this.onEnterTaskEditMode}
 					onDelete={this.onDeleteTask}
-					onExitEditMode={this.onExitTaskEditMode}
 					onSaveChanges={this.onSaveTaskChanges}
 					onChangeCompletedStatus={this.onChangeTaskCompletedStatus}
 				/>
